@@ -99,18 +99,38 @@
   .btn{
     font-family:var(--ios-font);
     font-weight:600;
-    border:none;border-radius:50px;
-    padding:15px 34px;
-    font-size:18px;
+    border:none;
     cursor:pointer;
     transition:transform .15s ease, opacity .15s ease;
   }
   .btn:active{transform:translateY(2px);}
-  #yesBtn{background:var(--gold);color:#fff;position:relative;z-index:45;}
+  #yesBtn{
+    background:var(--gold);color:#fff;position:relative;z-index:45;
+    border-radius:50px;padding:15px 34px;font-size:18px;
+  }
+  /* "No" button styled like a chocolate-chip cookie */
   #noBtn{
-    background:rgba(255,255,255,.94);color:var(--plum);
     position:fixed;
     z-index:46;
+    width:86px;height:86px;
+    padding:0;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:46% 54% 49% 51% / 53% 47% 53% 47%;
+    color:#3A2410;
+    font-size:16px;
+    font-weight:700;
+    text-shadow:0 1px 0 rgba(255,255,255,.25);
+    box-shadow:
+      inset -5px -5px 10px rgba(0,0,0,.18),
+      inset 5px 5px 10px rgba(255,255,255,.22),
+      0 6px 14px rgba(0,0,0,.2);
+    background-image:
+      radial-gradient(circle at 22% 26%, #5b3a22 5px, transparent 6px),
+      radial-gradient(circle at 70% 20%, #5b3a22 4px, transparent 5px),
+      radial-gradient(circle at 50% 52%, #5b3a22 5px, transparent 6px),
+      radial-gradient(circle at 24% 70%, #5b3a22 4px, transparent 5px),
+      radial-gradient(circle at 78% 66%, #5b3a22 4px, transparent 5px),
+      radial-gradient(circle at 42% 35%, #E8C18A, #C8893E 68%);
   }
   #noBtn.hidden{display:none;}
   @keyframes popIn{
@@ -133,7 +153,9 @@
   }
 
   /* dogs */
-  .dog{position:absolute;bottom:14%;}
+  #dogsLayer{position:absolute;inset:0;z-index:10;pointer-events:none;}
+  .dog{position:absolute;touch-action:none;pointer-events:auto;cursor:grab;}
+  .dog.dragging{cursor:grabbing;z-index:72 !important;}
   .dog-flip{display:block;}
   .dog svg{display:block;}
   .dog-label{
@@ -208,6 +230,9 @@
     color:#fff;font-size:18px;max-width:320px;line-height:1.55;font-weight:600;
     text-shadow:0 2px 10px rgba(0,0,0,.4);margin:0;
   }
+  #final .love{
+    display:block;margin-top:14px;font-size:26px;font-weight:800;
+  }
   .confetti{position:absolute;top:-10px;border-radius:2px;animation:fall linear forwards;}
   @keyframes fall{
     to{transform:translateY(110vh) rotate(540deg);opacity:.9;}
@@ -241,11 +266,11 @@
 
   <!-- ============ QUESTION SCREEN ============ -->
   <div id="scene">
-    <div id="sceneBg"><svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+    <div id="sceneBg"><svg viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#6B4F7A"/>
-      <stop offset="45%" stop-color="#C97B6B"/>
+      <stop offset="42%" stop-color="#C97B6B"/>
       <stop offset="100%" stop-color="#F6C77B"/>
     </linearGradient>
     <linearGradient id="mtn1" x1="0" y1="0" x2="0" y2="1">
@@ -258,74 +283,65 @@
     </linearGradient>
     <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#4C5A3E"/>
-      <stop offset="100%" stop-color="#3A4630"/>
+      <stop offset="100%" stop-color="#34401F"/>
     </linearGradient>
   </defs>
 
-  <rect x="0" y="0" width="800" height="600" fill="url(#sky)"/>
+  <rect x="0" y="0" width="400" height="800" fill="url(#sky)"/>
 
-  <!-- sun glow -->
-  <circle cx="600" cy="170" r="70" fill="#FCE2A0" opacity="0.55"/>
-  <circle cx="600" cy="170" r="42" fill="#FDEFC6" opacity="0.85"/>
+  <circle cx="290" cy="200" r="62" fill="#FCE2A0" opacity="0.5"/>
+  <circle cx="290" cy="200" r="36" fill="#FDEFC6" opacity="0.85"/>
 
-  <!-- far mountains -->
-  <path d="M0,330 L90,250 L180,310 L260,230 L350,300 L430,240 L520,310 L610,260 L700,320 L800,270 L800,600 L0,600 Z" fill="url(#mtn2)" opacity="0.85"/>
-  <!-- mid mountains -->
-  <path d="M0,380 L70,320 L150,370 L250,300 L340,360 L430,310 L540,375 L640,330 L730,380 L800,350 L800,600 L0,600 Z" fill="url(#mtn1)"/>
+  <path d="M0,400 L45,340 L90,385 L135,320 L180,378 L225,330 L270,385 L315,345 L360,392 L400,355 L400,800 L0,800 Z" fill="url(#mtn2)" opacity="0.85"/>
+  <path d="M0,450 L35,400 L75,440 L125,375 L170,430 L215,390 L270,445 L320,405 L365,448 L400,425 L400,800 L0,800 Z" fill="url(#mtn1)"/>
 
-  <!-- pine forest silhouette band -->
   <g fill="#2F3A28">
-    <path d="M20,430 L40,370 L60,430 Z"/>
-    <path d="M55,440 L80,360 L105,440 Z"/>
-    <path d="M95,432 L118,378 L141,432 Z"/>
-    <path d="M135,440 L160,365 L185,440 Z"/>
-    <path d="M610,440 L635,365 L660,440 Z"/>
-    <path d="M650,432 L673,378 L696,432 Z"/>
-    <path d="M690,440 L715,360 L740,440 Z"/>
-    <path d="M730,430 L750,370 L770,430 Z"/>
+    <path d="M8,500 L24,445 L40,500 Z"/>
+    <path d="M28,508 L46,438 L64,508 Z"/>
+    <path d="M52,500 L66,452 L80,500 Z"/>
+    <path d="M70,508 L88,440 L106,508 Z"/>
+    <path d="M310,508 L328,440 L346,508 Z"/>
+    <path d="M332,500 L346,452 L360,500 Z"/>
+    <path d="M352,508 L370,438 L388,508 Z"/>
+    <path d="M372,500 L388,445 L400,500 Z"/>
   </g>
 
-  <!-- ground -->
-  <rect x="0" y="430" width="800" height="170" fill="url(#groundGrad)"/>
+  <rect x="0" y="500" width="400" height="300" fill="url(#groundGrad)"/>
 
-  <!-- closer trees flanking the cabins -->
   <g fill="#26301F">
-    <path d="M60,460 L95,370 L130,460 Z"/>
-    <path d="M85,460 L115,388 L145,460 Z"/>
-    <path d="M650,460 L688,372 L726,460 Z"/>
-    <path d="M680,460 L710,390 L740,460 Z"/>
+    <path d="M22,540 L48,460 L74,540 Z"/>
+    <path d="M40,540 L60,475 L80,540 Z"/>
+    <path d="M326,540 L354,463 L382,540 Z"/>
+    <path d="M348,540 L368,478 L388,540 Z"/>
   </g>
 
-  <!-- Cabin 1 (left, larger) -->
-  <g transform="translate(190,400)">
-    <rect x="0" y="40" width="150" height="80" fill="#5A3D2B"/>
-    <rect x="0" y="40" width="150" height="80" fill="#000" opacity="0.06"/>
-    <polygon points="-12,40 75,-15 162,40" fill="#3E2A1E"/>
-    <rect x="20" y="62" width="26" height="30" fill="#3A2A1E"/>
-    <rect x="100" y="62" width="30" height="30" rx="2" fill="#F6C77B"/>
-    <rect x="100" y="62" width="30" height="30" rx="2" fill="none" stroke="#3A2A1E" stroke-width="3"/>
-    <rect x="58" y="48" width="6" height="20" fill="#2E2018"/>
-    <rect x="50" y="20" width="14" height="32" fill="#4A3526"/>
+  <g transform="translate(60,470)">
+    <rect x="0" y="38" width="118" height="64" fill="#5A3D2B"/>
+    <polygon points="-10,38 59,-12 128,38" fill="#3E2A1E"/>
+    <rect x="16" y="56" width="20" height="24" fill="#3A2A1E"/>
+    <rect x="78" y="56" width="24" height="24" rx="2" fill="#F6C77B"/>
+    <rect x="78" y="56" width="24" height="24" rx="2" fill="none" stroke="#3A2A1E" stroke-width="2.5"/>
+    <rect x="46" y="40" width="5" height="16" fill="#2E2018"/>
+    <rect x="40" y="16" width="11" height="26" fill="#4A3526"/>
   </g>
 
-  <!-- Cabin 2 (right, smaller) -->
-  <g transform="translate(420,420)">
-    <rect x="0" y="34" width="110" height="64" fill="#6B4A35"/>
-    <polygon points="-10,34 55,-8 120,34" fill="#4A3424"/>
-    <rect x="14" y="50" width="22" height="24" fill="#3A2A1E"/>
-    <rect x="72" y="48" width="24" height="24" rx="2" fill="#F6C77B"/>
-    <rect x="72" y="48" width="24" height="24" rx="2" fill="none" stroke="#3A2A1E" stroke-width="2.5"/>
+  <g transform="translate(232,490)">
+    <rect x="0" y="30" width="88" height="52" fill="#6B4A35"/>
+    <polygon points="-8,30 44,-7 96,30" fill="#4A3424"/>
+    <rect x="12" y="42" width="17" height="20" fill="#3A2A1E"/>
+    <rect x="56" y="40" width="20" height="20" rx="2" fill="#F6C77B"/>
+    <rect x="56" y="40" width="20" height="20" rx="2" fill="none" stroke="#3A2A1E" stroke-width="2"/>
   </g>
 
-  <!-- warm window glow -->
-  <circle cx="305" cy="478" r="26" fill="#FCE2A0" opacity="0.35"/>
-  <circle cx="504" cy="465" r="20" fill="#FCE2A0" opacity="0.3"/>
+  <circle cx="150" cy="540" r="22" fill="#FCE2A0" opacity="0.32"/>
+  <circle cx="284" cy="530" r="16" fill="#FCE2A0" opacity="0.28"/>
 
-  <!-- soft path/grass texture -->
-  <g fill="#566B43" opacity="0.5">
-    <ellipse cx="100" cy="560" rx="60" ry="10"/>
-    <ellipse cx="320" cy="580" rx="90" ry="12"/>
-    <ellipse cx="600" cy="565" rx="70" ry="10"/>
+  <g fill="#566B43" opacity="0.45">
+    <ellipse cx="70" cy="620" rx="55" ry="10"/>
+    <ellipse cx="200" cy="670" rx="80" ry="12"/>
+    <ellipse cx="320" cy="630" rx="55" ry="9"/>
+    <ellipse cx="130" cy="730" rx="90" ry="12"/>
+    <ellipse cx="290" cy="750" rx="75" ry="11"/>
   </g>
 </svg></div>
 
@@ -348,7 +364,7 @@
   <div id="final">
     <div id="finalBg"></div>
     <div id="finalShade"></div>
-    <p>Gracias por permitirme ser parte de tu vida una vez más.</p>
+    <p>Gracias por permitirme ser parte de tu vida una vez más.<span class="love">Te amo.</span></p>
   </div>
 
 </div>
@@ -424,16 +440,48 @@ function checkCode(){
 }
 
 /* ============================================================
-   QUESTION SCREEN — DOGS & THE "NO" BUTTON
-   Mechanic: tapping/clicking "No" makes a dog run in HEAD-FIRST
-   and snatch it in its mouth (not the tail). Works identically
-   on touch and desktop since it's click-driven, not hover-driven.
+   SOUND — short synthesized "ñam" bite sound (no audio file needed)
+============================================================ */
+let audioCtx = null;
+function playChompSound(){
+  try{
+    if(!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+    const t0 = audioCtx.currentTime;
+
+    const o1 = audioCtx.createOscillator();
+    const g1 = audioCtx.createGain();
+    o1.type = 'square';
+    o1.frequency.setValueAtTime(280, t0);
+    o1.frequency.exponentialRampToValueAtTime(90, t0 + 0.13);
+    g1.gain.setValueAtTime(0.22, t0);
+    g1.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
+    o1.connect(g1); g1.connect(audioCtx.destination);
+    o1.start(t0); o1.stop(t0 + 0.17);
+
+    const o2 = audioCtx.createOscillator();
+    const g2 = audioCtx.createGain();
+    o2.type = 'triangle';
+    o2.frequency.setValueAtTime(160, t0 + 0.05);
+    o2.frequency.exponentialRampToValueAtTime(60, t0 + 0.18);
+    g2.gain.setValueAtTime(0.16, t0 + 0.05);
+    g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
+    o2.connect(g2); g2.connect(audioCtx.destination);
+    o2.start(t0 + 0.05); o2.stop(t0 + 0.21);
+  }catch(e){ /* sound is a nice-to-have, never block the experience */ }
+}
+
+/* ============================================================
+   QUESTION SCREEN — DOGS & THE "NO" COOKIE BUTTON
 ============================================================ */
 const noBtn = document.getElementById('noBtn');
 const yesBtn = document.getElementById('yesBtn');
 const caption = document.getElementById('caption');
 const dogsLayer = document.getElementById('dogsLayer');
 const finalScreen = document.getElementById('final');
+const sceneEl = document.getElementById('scene');
 
 let stolenIndex = 0;
 let noScale = 1;
@@ -441,8 +489,8 @@ let isStealing = false;
 
 /* Dog SVG: head + open-mouth snout faces RIGHT (forward) by default.
    Tail is on the LEFT (back). We flip the whole dog horizontally
-   with scaleX(-1) depending on which direction it needs to run,
-   so the head always leads and visibly grabs the button. */
+   depending on which direction it needs to run, so the head always
+   leads and visibly grabs the cookie. */
 function dogSVG(c){
   return `
   <svg viewBox="0 0 150 100" width="${c.w}" height="${c.h}">
@@ -450,18 +498,13 @@ function dogSVG(c){
       <ellipse class="tail-part" cx="14" cy="52" rx="13" ry="6" fill="${c.body}" transform="rotate(15 14 52)"/>
       <ellipse cx="78" cy="60" rx="44" ry="26" fill="${c.body}"/>
       <ellipse cx="78" cy="74" rx="30" ry="11" fill="${c.belly}"/>
-      <!-- head, facing right -->
       <circle cx="118" cy="42" r="23" fill="${c.body}"/>
-      <!-- snout -->
       <ellipse cx="140" cy="48" rx="13" ry="9" fill="${c.snout||c.body}"/>
       <ellipse cx="146" cy="49" rx="5" ry="4" fill="#2b1c12"/>
       <path d="M133,55 q7,5 14,0" stroke="#3a2a1e" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- ears -->
       <ellipse cx="106" cy="24" rx="8" ry="14" fill="${c.ear}" transform="rotate(-15 106 24)"/>
       <ellipse cx="130" cy="24" rx="8" ry="14" fill="${c.ear}" transform="rotate(18 130 24)"/>
-      <!-- eye -->
       <circle cx="124" cy="36" r="2.6" fill="#2b1c12"/>
-      <!-- legs -->
       <rect x="30" y="82" width="9" height="15" rx="3" fill="${c.body}"/>
       <rect x="52" y="84" width="9" height="15" rx="3" fill="${c.body}"/>
       <rect x="92" y="84" width="9" height="15" rx="3" fill="${c.body}"/>
@@ -470,32 +513,40 @@ function dogSVG(c){
   </svg>`;
 }
 
-/* Each dog: name, palette, and which side of the screen it enters from */
 const DOG_SEQUENCE = [
-  {name:'Mila',     side:'left',  palette:{w:136,h:90, body:'#E3A857', belly:'#F3D9A6', ear:'#C9893A', snout:'#EFC089'}},        // Golden
-  {name:'Luna',     side:'right', palette:{w:104,h:78, body:'#FAF7F2', belly:'#EDEAE4', ear:'#E3DED4', snout:'#EDEAE4'}},        // Poodle blanco
-  {name:'Maya',     side:'left',  palette:{w:112,h:74, body:'#C98A4B', belly:'#FFFFFF', ear:'#5B3A22', snout:'#E0A36B'}},        // Beagle
-  {name:'Max',      side:'right', palette:{w:148,h:96, body:'#9CA3AC', belly:'#F2F2F0', ear:'#5C636B', snout:'#EDEDEC'}},        // Husky grande
-  {name:'Princess', side:'left',  palette:{w:62, h:48, body:'#D9B27C', belly:'#F1DDB0', ear:'#B8915A', snout:'#E6C699'}},        // Yorkie güero
-  {name:'Tobías',   side:'right', palette:{w:62, h:48, body:'#5C432E', belly:'#C9A368', ear:'#3E2C1C', snout:'#7A5A3C'}},        // Yorkie oscuro
+  {name:'Mila',     side:'left',  palette:{w:136,h:90, body:'#E3A857', belly:'#F3D9A6', ear:'#C9893A', snout:'#EFC089'}},
+  {name:'Luna',     side:'right', palette:{w:104,h:78, body:'#FAF7F2', belly:'#EDEAE4', ear:'#E3DED4', snout:'#EDEAE4'}},
+  {name:'Maya',     side:'left',  palette:{w:112,h:74, body:'#C98A4B', belly:'#FFFFFF', ear:'#5B3A22', snout:'#E0A36B'}},
+  {name:'Max',      side:'right', palette:{w:148,h:96, body:'#9CA3AC', belly:'#F2F2F0', ear:'#5C636B', snout:'#EDEDEC'}},
+  {name:'Princess', side:'left',  palette:{w:62, h:48, body:'#D9B27C', belly:'#F1DDB0', ear:'#B8915A', snout:'#E6C699'}},
+  {name:'Tobías',   side:'right', palette:{w:62, h:48, body:'#5C432E', belly:'#C9A368', ear:'#3E2C1C', snout:'#7A5A3C'}},
 ];
 
-const RESET_SPOTS = [
-  {left:'6%',  bottom:'15%'},
-  {left:'82%', bottom:'13%'},
-  {left:'40%', bottom:'9%'},
-  {left:'62%', bottom:'17%'},
-  {left:'22%', bottom:'8%'},
-  {left:'72%', bottom:'9%'},
+/* Reset spots as percentages of the scene, used to scatter dogs
+   on the visible grass band at the bottom of the cabin background. */
+const RESET_SPOTS_PCT = [
+  {leftPct:0.06, topPct:0.78},
+  {leftPct:0.80, topPct:0.74},
+  {leftPct:0.38, topPct:0.84},
+  {leftPct:0.58, topPct:0.70},
+  {leftPct:0.20, topPct:0.88},
+  {leftPct:0.70, topPct:0.86},
 ];
+
+const dogEls = [];
 
 function initDogs(){
+  const sceneRect = sceneEl.getBoundingClientRect();
   DOG_SEQUENCE.forEach((d,i)=>{
     const wrap = document.createElement('div');
     wrap.className = 'dog';
     wrap.id = 'dog'+i;
-    wrap.style.left = RESET_SPOTS[i].left;
-    wrap.style.bottom = RESET_SPOTS[i].bottom;
+
+    const spot = RESET_SPOTS_PCT[i];
+    const left = sceneRect.width * spot.leftPct;
+    const top = sceneRect.height * spot.topPct;
+    wrap.style.left = left + 'px';
+    wrap.style.top = top + 'px';
 
     const flip = document.createElement('div');
     flip.className = 'dog-flip';
@@ -508,8 +559,48 @@ function initDogs(){
     wrap.appendChild(label);
 
     dogsLayer.appendChild(wrap);
+    dogEls.push(wrap);
+    makeDraggable(wrap);
   });
-  positionNoButtonInitial();
+  positionNoButtonNextToYes();
+}
+
+/* ---------- Drag-to-move for each dog (mouse + touch via Pointer Events) ---------- */
+function makeDraggable(dogEl){
+  let dragging = false;
+  let offsetX = 0, offsetY = 0;
+
+  dogEl.addEventListener('pointerdown', (e)=>{
+    if(dogEl.classList.contains('running') || dogEl.classList.contains('biting')) return;
+    dragging = true;
+    dogEl.classList.add('dragging');
+    dogEl.setPointerCapture(e.pointerId);
+    const rect = dogEl.getBoundingClientRect();
+    const sceneRect = sceneEl.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    dogEl.style.transition = 'none';
+  });
+
+  dogEl.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    const sceneRect = sceneEl.getBoundingClientRect();
+    let newLeft = e.clientX - sceneRect.left - offsetX;
+    let newTop = e.clientY - sceneRect.top - offsetY;
+    newLeft = Math.max(-20, Math.min(sceneRect.width - 20, newLeft));
+    newTop = Math.max(-10, Math.min(sceneRect.height - 20, newTop));
+    dogEl.style.left = newLeft + 'px';
+    dogEl.style.top = newTop + 'px';
+  });
+
+  function endDrag(e){
+    if(!dragging) return;
+    dragging = false;
+    dogEl.classList.remove('dragging');
+    try{ dogEl.releasePointerCapture(e.pointerId); }catch(err){}
+  }
+  dogEl.addEventListener('pointerup', endDrag);
+  dogEl.addEventListener('pointercancel', endDrag);
 }
 
 function showCaption(text, extraClass, duration){
@@ -519,9 +610,15 @@ function showCaption(text, extraClass, duration){
   setTimeout(()=> caption.classList.remove('show'), duration || 1700);
 }
 
-function positionNoButtonInitial(){
-  noBtn.style.left = (window.innerWidth/2 + 75) + 'px';
-  noBtn.style.top = (window.innerHeight*0.38) + 'px';
+/* Keep the "No" cookie visually paired with "Sí", centered as a set,
+   instead of flying off to a fixed offset on screen. */
+function positionNoButtonNextToYes(){
+  const yesRect = yesBtn.getBoundingClientRect();
+  const noW = noBtn.offsetWidth || 86;
+  const noH = noBtn.offsetHeight || 86;
+  const gap = 18;
+  noBtn.style.left = (yesRect.right + gap) + 'px';
+  noBtn.style.top = (yesRect.top + yesRect.height/2 - noH/2) + 'px';
 }
 
 function spawnDust(x,y){
@@ -531,7 +628,7 @@ function spawnDust(x,y){
     d.style.left = (x + (Math.random()*20-10)) + 'px';
     d.style.top = y + 'px';
     d.style.animationDelay = (i*0.05)+'s';
-    document.getElementById('scene').appendChild(d);
+    sceneEl.appendChild(d);
     setTimeout(()=> d.remove(), 700);
   }
 }
@@ -542,7 +639,7 @@ function spawnChomp(x,y){
   c.textContent = '¡ÑAM!';
   c.style.left = x + 'px';
   c.style.top = y + 'px';
-  document.getElementById('scene').appendChild(c);
+  sceneEl.appendChild(c);
   setTimeout(()=> c.remove(), 600);
 }
 
@@ -566,29 +663,30 @@ function triggerSteal(){
   noBtn.classList.remove('pop-in');
 
   const noRect = noBtn.getBoundingClientRect();
+  const sceneRect = sceneEl.getBoundingClientRect();
   const fromLeft = dogInfo.side === 'left';
   const dogW = dogEl.offsetWidth || 100;
-  const startX = fromLeft ? -dogW - 60 : window.innerWidth + 60;
-  // head sits on the right side of the artwork; when entering from the
-  // right we flip the dog so the head leads on the left side instead.
-  const arriveX = fromLeft
-    ? (noRect.left + noRect.width/2 - dogW*0.86)
-    : (noRect.left + noRect.width/2 - dogW*0.14);
-  const dogBottom = window.innerHeight - noRect.top - noRect.height*0.55;
+  const dogH = dogEl.offsetHeight || 70;
+
+  const startLeft = fromLeft ? -dogW - 60 : sceneRect.width + 60;
+  const arriveLeft = fromLeft
+    ? (noRect.left - sceneRect.left + noRect.width/2 - dogW*0.86)
+    : (noRect.left - sceneRect.left + noRect.width/2 - dogW*0.14);
+  const arriveTop = (noRect.top - sceneRect.top) + noRect.height/2 - dogH/2;
 
   const flipEl = dogEl.querySelector('.dog-flip');
   flipEl.style.transform = fromLeft ? 'scaleX(1)' : 'scaleX(-1)';
 
   dogEl.style.transition = 'none';
   dogEl.style.zIndex = 70;
-  dogEl.style.left = startX + 'px';
-  dogEl.style.bottom = dogBottom + 'px';
+  dogEl.style.left = startLeft + 'px';
+  dogEl.style.top = arriveTop + 'px';
   dogEl.classList.add('running');
   void dogEl.offsetWidth;
 
   requestAnimationFrame(()=>{
     dogEl.style.transition = 'left .48s cubic-bezier(.45,0,.4,1)';
-    dogEl.style.left = arriveX + 'px';
+    dogEl.style.left = arriveLeft + 'px';
   });
 
   setTimeout(()=>{
@@ -599,6 +697,7 @@ function triggerSteal(){
     const biteY = noRect.top + noRect.height/2;
     spawnDust(biteX, biteY);
     spawnChomp(biteX - 20, biteY - 36);
+    playChompSound();
 
     noBtn.style.transition = 'transform .22s ease-in, opacity .22s ease-in';
     noBtn.style.transformOrigin = fromLeft ? 'left center' : 'right center';
@@ -612,19 +711,22 @@ function triggerSteal(){
 
       dogEl.classList.remove('biting');
       dogEl.classList.add('running');
-      const exitX = fromLeft ? window.innerWidth + dogW + 80 : -dogW - 120;
+      const exitLeft = fromLeft ? sceneRect.width + dogW + 80 : -dogW - 120;
 
       setTimeout(()=>{
         dogEl.style.transition = 'left .6s cubic-bezier(.4,0,.2,1)';
-        dogEl.style.left = exitX + 'px';
+        dogEl.style.left = exitLeft + 'px';
       }, 30);
 
       setTimeout(()=>{
         dogEl.classList.remove('running');
         dogEl.style.transition = 'none';
         dogEl.style.zIndex = '';
-        dogEl.style.bottom = RESET_SPOTS[stolenIndex].bottom;
-        dogEl.style.left = fromLeft ? '90%' : '2%';
+        const spot = RESET_SPOTS_PCT[stolenIndex];
+        dogEl.style.top = (sceneRect.height * spot.topPct) + 'px';
+        dogEl.style.left = fromLeft
+          ? (sceneRect.width * 0.90) + 'px'
+          : (sceneRect.width * 0.02) + 'px';
         flipEl.style.transform = 'scaleX(1)';
 
         stolenIndex++;
@@ -634,13 +736,13 @@ function triggerSteal(){
           noScale = Math.max(0.6, noScale - 0.08);
           setTimeout(()=>{
             noBtn.style.transform = `scale(${noScale})`;
-            positionNoButtonInitial();
+            positionNoButtonNextToYes();
             noBtn.classList.remove('hidden');
             noBtn.classList.add('pop-in');
           }, 550);
         } else {
           setTimeout(()=>{
-            showCaption('Ups... se han comido todos los botones de "No" 🐾', 'oops', 3700);
+            showCaption('Ups, se han comido todos los "No" 🐾', 'oops', 3700);
           }, 350);
         }
       }, 650);
@@ -648,13 +750,18 @@ function triggerSteal(){
   }, 500);
 }
 
+window.addEventListener('resize', ()=>{
+  if(!noBtn.classList.contains('hidden') && stolenIndex < DOG_SEQUENCE.length){
+    positionNoButtonNextToYes();
+  }
+});
+
 /* ============================================================
-   "SÍ" — notify by push notification (no email confirmation step
-   required) + show celebration screen
+   "SÍ" — notify by push notification + show celebration screen
 ============================================================ */
 yesBtn.addEventListener('click', ()=>{
   notifySaidYes();
-  document.getElementById('scene').style.display='none';
+  sceneEl.style.display='none';
   finalScreen.style.display='flex';
   launchConfetti();
 });
@@ -667,7 +774,7 @@ function notifySaidYes(){
   fetch('https://ntfy.sh/cesar-regreso-1107', {
     method: 'POST',
     headers: { 'Title': 'Te tengo noticias 💗' },
-    body: 'Ella le dio clic a "Sí". Los perros se comieron todos los botones de "No". ¡Dijo que sí!'
+    body: 'Ella le dio clic a "Sí". Los perros se comieron todos los "No". ¡Dijo que sí!'
   }).catch(()=>{ /* never interrupt her experience over a network hiccup */ });
 }
 
