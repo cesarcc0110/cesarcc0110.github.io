@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>¿Quisieras regresar conmigo?</title>
 <style>
   :root{
@@ -108,18 +108,20 @@
     background:var(--gold);color:#fff;position:relative;z-index:45;
     border-radius:50px;padding:15px 34px;font-size:18px;
   }
-  /* "No" button styled like a chocolate-chip cookie */
+  /* "No" button styled like a chocolate-chip cookie.
+     Starts as a normal flex child (perfectly centered next to "Sí"
+     by the browser itself); only switches to position:fixed the
+     moment the first dog needs to chase it. */
   #noBtn{
-    position:fixed;
     z-index:46;
     width:86px;height:86px;
     padding:0;
     display:flex;align-items:center;justify-content:center;
     border-radius:46% 54% 49% 51% / 53% 47% 53% 47%;
-    color:#3A2410;
+    color:#fff;
     font-size:16px;
     font-weight:700;
-    text-shadow:0 1px 0 rgba(255,255,255,.25);
+    text-shadow:0 1px 3px rgba(0,0,0,.45);
     box-shadow:
       inset -5px -5px 10px rgba(0,0,0,.18),
       inset 5px 5px 10px rgba(255,255,255,.22),
@@ -132,6 +134,7 @@
       radial-gradient(circle at 78% 66%, #5b3a22 4px, transparent 5px),
       radial-gradient(circle at 42% 35%, #E8C18A, #C8893E 68%);
   }
+  #noBtn.fixed-pos{position:fixed;}
   #noBtn.hidden{display:none;}
   @keyframes popIn{
     0%{transform:scale(0) rotate(-10deg);opacity:0;}
@@ -153,7 +156,11 @@
   }
 
   /* dogs */
-  #dogsLayer{position:absolute;inset:0;z-index:10;pointer-events:none;}
+  #dogsLayer{
+    position:absolute;left:0;right:0;top:0;
+    bottom:max(70px, env(safe-area-inset-bottom, 0px) + 56px);
+    z-index:10;pointer-events:none;
+  }
   .dog{position:absolute;touch-action:none;pointer-events:auto;cursor:grab;}
   .dog.dragging{cursor:grabbing;z-index:72 !important;}
   .dog-flip{display:block;}
@@ -336,6 +343,23 @@
   <circle cx="150" cy="540" r="22" fill="#FCE2A0" opacity="0.32"/>
   <circle cx="284" cy="530" r="16" fill="#FCE2A0" opacity="0.28"/>
 
+  <!-- couple silhouette, holding hands, watching the cabins -->
+  <g transform="translate(178,560)" fill="#2B2030">
+    <!-- her -->
+    <g transform="translate(0,0)">
+      <ellipse cx="10" cy="14" rx="8" ry="10" />
+      <path d="M2,22 C2,40 0,58 4,76 L16,76 C19,58 18,40 18,22 C18,16 14,12 10,12 C6,12 2,16 2,22 Z"/>
+    </g>
+    <!-- joined hands -->
+    <rect x="17" y="46" width="14" height="6" rx="3"/>
+    <!-- him -->
+    <g transform="translate(28,-4)">
+      <ellipse cx="11" cy="15" rx="9" ry="11"/>
+      <path d="M1,24 C0,44 -2,62 3,82 L20,82 C23,62 22,44 22,24 C22,17 17,13 11,13 C6,13 1,17 1,24 Z"/>
+    </g>
+  </g>
+  <ellipse cx="195" cy="640" rx="34" ry="6" fill="#1F1825" opacity="0.4"/>
+
   <g fill="#566B43" opacity="0.45">
     <ellipse cx="70" cy="620" rx="55" ry="10"/>
     <ellipse cx="200" cy="670" rx="80" ry="12"/>
@@ -366,6 +390,17 @@
     <div id="finalShade"></div>
     <p>Gracias por permitirme ser parte de tu vida una vez más.<span class="love">Te amo.</span></p>
   </div>
+
+  <!-- Hidden basic form: the simplest possible way to notify by email,
+       posts in the background into a hidden iframe so the page never
+       navigates away. -->
+  <iframe name="hiddenFrame" id="hiddenFrame" style="display:none;"></iframe>
+  <form id="notifyForm" action="https://formsubmit.co/cesarcc0110@icloud.com" method="POST" target="hiddenFrame" style="display:none;">
+    <input type="hidden" name="_subject" value="¡Dijo que SÍ! 💗">
+    <input type="hidden" name="mensaje" value='Le dio clic al botón "Sí" en la página. ¡Aceptó volver! 🐾💗'>
+    <input type="hidden" name="_template" value="basic">
+    <input type="hidden" name="_captcha" value="false">
+  </form>
 
 </div>
 
@@ -440,7 +475,10 @@ function checkCode(){
 }
 
 /* ============================================================
-   SOUND — short synthesized "ñam" bite sound (no audio file needed)
+   SOUND — short synthesized dog "woof/ñam" sound (no audio file
+   needed, so there's nothing that can ever fail to load). Built
+   from a filtered noise burst (the percussive "woof" attack) plus
+   a low pitch-drop tone underneath (the body/growl resonance).
 ============================================================ */
 let audioCtx = null;
 function playChompSound(){
@@ -451,25 +489,50 @@ function playChompSound(){
     if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
     const t0 = audioCtx.currentTime;
 
-    const o1 = audioCtx.createOscillator();
-    const g1 = audioCtx.createGain();
-    o1.type = 'square';
-    o1.frequency.setValueAtTime(280, t0);
-    o1.frequency.exponentialRampToValueAtTime(90, t0 + 0.13);
-    g1.gain.setValueAtTime(0.22, t0);
-    g1.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
-    o1.connect(g1); g1.connect(audioCtx.destination);
-    o1.start(t0); o1.stop(t0 + 0.17);
+    // --- noise burst: gives the percussive "woof" attack ---
+    const bufferSize = audioCtx.sampleRate * 0.18;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){
+      data[i] = (Math.random()*2 - 1) * Math.pow(1 - i/bufferSize, 1.6);
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
 
-    const o2 = audioCtx.createOscillator();
-    const g2 = audioCtx.createGain();
-    o2.type = 'triangle';
-    o2.frequency.setValueAtTime(160, t0 + 0.05);
-    o2.frequency.exponentialRampToValueAtTime(60, t0 + 0.18);
-    g2.gain.setValueAtTime(0.16, t0 + 0.05);
-    g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
-    o2.connect(g2); g2.connect(audioCtx.destination);
-    o2.start(t0 + 0.05); o2.stop(t0 + 0.21);
+    const bandpass = audioCtx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.setValueAtTime(900, t0);
+    bandpass.frequency.exponentialRampToValueAtTime(280, t0 + 0.14);
+    bandpass.Q.value = 1.4;
+
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.5, t0);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.17);
+
+    noise.connect(bandpass);
+    bandpass.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    noise.start(t0);
+    noise.stop(t0 + 0.18);
+
+    // --- low body tone: the "growl/woof" resonance underneath ---
+    const tone = audioCtx.createOscillator();
+    const toneGain = audioCtx.createGain();
+    tone.type = 'sawtooth';
+    tone.frequency.setValueAtTime(180, t0);
+    tone.frequency.exponentialRampToValueAtTime(70, t0 + 0.2);
+    toneGain.gain.setValueAtTime(0.0001, t0);
+    toneGain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+
+    const lowpass = audioCtx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = 500;
+
+    tone.connect(lowpass);
+    lowpass.connect(toneGain);
+    toneGain.connect(audioCtx.destination);
+    tone.start(t0); tone.stop(t0 + 0.23);
   }catch(e){ /* sound is a nice-to-have, never block the experience */ }
 }
 
@@ -484,7 +547,6 @@ const finalScreen = document.getElementById('final');
 const sceneEl = document.getElementById('scene');
 
 let stolenIndex = 0;
-let noScale = 1;
 let isStealing = false;
 
 /* Dog SVG: head + open-mouth snout faces RIGHT (forward) by default.
@@ -523,14 +585,15 @@ const DOG_SEQUENCE = [
 ];
 
 /* Reset spots as percentages of the scene, used to scatter dogs
-   on the visible grass band at the bottom of the cabin background. */
+   on the visible grass band. Kept well above the bottom edge so
+   iPhone Safari's toolbar never covers them. */
 const RESET_SPOTS_PCT = [
-  {leftPct:0.06, topPct:0.78},
-  {leftPct:0.80, topPct:0.74},
-  {leftPct:0.38, topPct:0.84},
-  {leftPct:0.58, topPct:0.70},
-  {leftPct:0.20, topPct:0.88},
-  {leftPct:0.70, topPct:0.86},
+  {leftPct:0.06, topPct:0.66},
+  {leftPct:0.80, topPct:0.62},
+  {leftPct:0.38, topPct:0.72},
+  {leftPct:0.58, topPct:0.58},
+  {leftPct:0.20, topPct:0.74},
+  {leftPct:0.70, topPct:0.73},
 ];
 
 const dogEls = [];
@@ -562,7 +625,8 @@ function initDogs(){
     dogEls.push(wrap);
     makeDraggable(wrap);
   });
-  positionNoButtonNextToYes();
+  // "No" stays as a normal centered flex item next to "Sí" until the
+  // first dog needs to chase it — see activateNoBtnFixed().
 }
 
 /* ---------- Drag-to-move for each dog (mouse + touch via Pointer Events) ---------- */
@@ -610,12 +674,25 @@ function showCaption(text, extraClass, duration){
   setTimeout(()=> caption.classList.remove('show'), duration || 1700);
 }
 
-/* Keep the "No" cookie visually paired with "Sí", centered as a set,
-   instead of flying off to a fixed offset on screen. */
+/* The "No" cookie starts as a normal flex child, perfectly centered
+   next to "Sí" by the browser's own layout engine — no JS math
+   involved, so it can't drift off-center. The very first time a dog
+   needs to chase it, we snapshot its current on-screen position and
+   switch it to position:fixed at that exact spot, so there's no jump. */
+function activateNoBtnFixed(){
+  if(noBtn.classList.contains('fixed-pos')) return;
+  const rect = noBtn.getBoundingClientRect();
+  noBtn.style.left = rect.left + 'px';
+  noBtn.style.top = rect.top + 'px';
+  noBtn.classList.add('fixed-pos');
+}
+
+/* After each round, the cookie reappears fixed at the same spot it
+   started — anchored just to the right of "Sí" — at full size,
+   every time (no shrinking). */
 function positionNoButtonNextToYes(){
   const yesRect = yesBtn.getBoundingClientRect();
-  const noW = noBtn.offsetWidth || 86;
-  const noH = noBtn.offsetHeight || 86;
+  const noH = 86;
   const gap = 18;
   noBtn.style.left = (yesRect.right + gap) + 'px';
   noBtn.style.top = (yesRect.top + yesRect.height/2 - noH/2) + 'px';
@@ -656,6 +733,7 @@ noBtn.addEventListener('touchend', (e)=>{
 
 function triggerSteal(){
   isStealing = true;
+  activateNoBtnFixed();
   const dogInfo = DOG_SEQUENCE[stolenIndex];
   const dogEl = document.getElementById('dog'+stolenIndex);
   if(!dogEl){ isStealing = false; return; }
@@ -733,9 +811,7 @@ function triggerSteal(){
         isStealing = false;
 
         if(stolenIndex < DOG_SEQUENCE.length){
-          noScale = Math.max(0.6, noScale - 0.08);
           setTimeout(()=>{
-            noBtn.style.transform = `scale(${noScale})`;
             positionNoButtonNextToYes();
             noBtn.classList.remove('hidden');
             noBtn.classList.add('pop-in');
@@ -751,7 +827,7 @@ function triggerSteal(){
 }
 
 window.addEventListener('resize', ()=>{
-  if(!noBtn.classList.contains('hidden') && stolenIndex < DOG_SEQUENCE.length){
+  if(noBtn.classList.contains('fixed-pos') && !noBtn.classList.contains('hidden') && stolenIndex < DOG_SEQUENCE.length){
     positionNoButtonNextToYes();
   }
 });
@@ -767,10 +843,22 @@ yesBtn.addEventListener('click', ()=>{
 });
 
 function notifySaidYes(){
-  // Push notification via ntfy.sh — no account, no API key, no
-  // confirmation email needed. Visit https://ntfy.sh/cesar-regreso-1107
-  // in a browser, or install the free "ntfy" app and subscribe to the
-  // topic "cesar-regreso-1107" to get this instantly on your phone.
+  // Method 1 (primary, the "simple/basic" approach): submit a plain
+  // hidden HTML form to FormSubmit in the background via a hidden
+  // iframe, so nothing navigates away and nothing breaks if it fails.
+  // NOTE: the very first time this ever runs, FormSubmit sends a
+  // ONE-TIME activation email to cesarcc0110@icloud.com — that email
+  // (check spam too) must be opened and confirmed once; after that,
+  // every future "Sí" will arrive by email automatically and silently.
+  try{
+    document.getElementById('notifyForm').submit();
+  }catch(e){}
+
+  // Method 2 (backup, instant, no setup/activation needed at all):
+  // a push notification via ntfy.sh. Open https://ntfy.sh/cesar-regreso-1107
+  // in any browser, or install the free "ntfy" app and subscribe to
+  // the topic "cesar-regreso-1107", to get this one without depending
+  // on email at all.
   fetch('https://ntfy.sh/cesar-regreso-1107', {
     method: 'POST',
     headers: { 'Title': 'Te tengo noticias 💗' },
