@@ -489,50 +489,54 @@ function playChompSound(){
     if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
     const t0 = audioCtx.currentTime;
 
-    // --- noise burst: gives the percussive "woof" attack ---
-    const bufferSize = audioCtx.sampleRate * 0.18;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for(let i=0;i<bufferSize;i++){
-      data[i] = (Math.random()*2 - 1) * Math.pow(1 - i/bufferSize, 1.6);
+    function barkPulse(start, duration, strength){
+      const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i=0;i<bufferSize;i++){
+        data[i] = (Math.random()*2 - 1) * Math.pow(1 - i/bufferSize, 2.4);
+      }
+
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const bandpass = audioCtx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(520, start);
+      bandpass.frequency.exponentialRampToValueAtTime(170, start + duration * 0.86);
+      bandpass.Q.value = 2.2;
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.0001, start);
+      noiseGain.gain.exponentialRampToValueAtTime(0.55 * strength, start + 0.012);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+      const tone = audioCtx.createOscillator();
+      tone.type = 'sawtooth';
+      tone.frequency.setValueAtTime(155, start);
+      tone.frequency.exponentialRampToValueAtTime(72, start + duration * 0.9);
+      const lowpass = audioCtx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 430;
+      const toneGain = audioCtx.createGain();
+      toneGain.gain.setValueAtTime(0.0001, start);
+      toneGain.gain.exponentialRampToValueAtTime(0.22 * strength, start + 0.018);
+      toneGain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+      noise.connect(bandpass);
+      bandpass.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      tone.connect(lowpass);
+      lowpass.connect(toneGain);
+      toneGain.connect(audioCtx.destination);
+
+      noise.start(start);
+      noise.stop(start + duration);
+      tone.start(start);
+      tone.stop(start + duration + 0.02);
     }
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
 
-    const bandpass = audioCtx.createBiquadFilter();
-    bandpass.type = 'bandpass';
-    bandpass.frequency.setValueAtTime(900, t0);
-    bandpass.frequency.exponentialRampToValueAtTime(280, t0 + 0.14);
-    bandpass.Q.value = 1.4;
-
-    const noiseGain = audioCtx.createGain();
-    noiseGain.gain.setValueAtTime(0.5, t0);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.17);
-
-    noise.connect(bandpass);
-    bandpass.connect(noiseGain);
-    noiseGain.connect(audioCtx.destination);
-    noise.start(t0);
-    noise.stop(t0 + 0.18);
-
-    // --- low body tone: the "growl/woof" resonance underneath ---
-    const tone = audioCtx.createOscillator();
-    const toneGain = audioCtx.createGain();
-    tone.type = 'sawtooth';
-    tone.frequency.setValueAtTime(180, t0);
-    tone.frequency.exponentialRampToValueAtTime(70, t0 + 0.2);
-    toneGain.gain.setValueAtTime(0.0001, t0);
-    toneGain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
-    toneGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
-
-    const lowpass = audioCtx.createBiquadFilter();
-    lowpass.type = 'lowpass';
-    lowpass.frequency.value = 500;
-
-    tone.connect(lowpass);
-    lowpass.connect(toneGain);
-    toneGain.connect(audioCtx.destination);
-    tone.start(t0); tone.stop(t0 + 0.23);
+    barkPulse(t0, 0.18, 1);
+    barkPulse(t0 + 0.16, 0.12, 0.55);
   }catch(e){ /* sound is a nice-to-have, never block the experience */ }
 }
 
@@ -548,6 +552,7 @@ const sceneEl = document.getElementById('scene');
 
 let stolenIndex = 0;
 let isStealing = false;
+let noButtonHome = null;
 
 /* Dog SVG: head + open-mouth snout faces RIGHT (forward) by default.
    Tail is on the LEFT (back). We flip the whole dog horizontally
@@ -588,12 +593,12 @@ const DOG_SEQUENCE = [
    on the visible grass band. Kept well above the bottom edge so
    iPhone Safari's toolbar never covers them. */
 const RESET_SPOTS_PCT = [
-  {leftPct:0.06, topPct:0.66},
-  {leftPct:0.80, topPct:0.62},
-  {leftPct:0.38, topPct:0.72},
-  {leftPct:0.58, topPct:0.58},
-  {leftPct:0.20, topPct:0.74},
-  {leftPct:0.70, topPct:0.73},
+  {leftPct:0.04, topPct:0.66},
+  {leftPct:0.78, topPct:0.62},
+  {leftPct:0.36, topPct:0.72},
+  {leftPct:0.56, topPct:0.58},
+  {leftPct:0.18, topPct:0.74},
+  {leftPct:0.68, topPct:0.73},
 ];
 
 const dogEls = [];
@@ -627,6 +632,7 @@ function initDogs(){
   });
   // "No" stays as a normal centered flex item next to "Sí" until the
   // first dog needs to chase it — see activateNoBtnFixed().
+  requestAnimationFrame(captureNoButtonHome);
 }
 
 /* ---------- Drag-to-move for each dog (mouse + touch via Pointer Events) ---------- */
@@ -674,6 +680,14 @@ function showCaption(text, extraClass, duration){
   setTimeout(()=> caption.classList.remove('show'), duration || 1700);
 }
 
+function captureNoButtonHome(){
+  const rect = noBtn.getBoundingClientRect();
+  noButtonHome = {
+    leftOffset: rect.left - window.innerWidth / 2,
+    top: rect.top
+  };
+}
+
 /* The "No" cookie starts as a normal flex child, perfectly centered
    next to "Sí" by the browser's own layout engine — no JS math
    involved, so it can't drift off-center. The very first time a dog
@@ -682,20 +696,19 @@ function showCaption(text, extraClass, duration){
 function activateNoBtnFixed(){
   if(noBtn.classList.contains('fixed-pos')) return;
   const rect = noBtn.getBoundingClientRect();
+  if(!noButtonHome) captureNoButtonHome();
   noBtn.style.left = rect.left + 'px';
   noBtn.style.top = rect.top + 'px';
   noBtn.classList.add('fixed-pos');
 }
 
-/* After each round, the cookie reappears fixed at the same spot it
-   started — anchored just to the right of "Sí" — at full size,
+/* After each round, the cookie reappears fixed at the exact spot it
+   started in the centered button row — at full size,
    every time (no shrinking). */
 function positionNoButtonNextToYes(){
-  const yesRect = yesBtn.getBoundingClientRect();
-  const noH = 86;
-  const gap = 18;
-  noBtn.style.left = (yesRect.right + gap) + 'px';
-  noBtn.style.top = (yesRect.top + yesRect.height/2 - noH/2) + 'px';
+  if(!noButtonHome) captureNoButtonHome();
+  noBtn.style.left = (window.innerWidth / 2 + noButtonHome.leftOffset) + 'px';
+  noBtn.style.top = noButtonHome.top + 'px';
 }
 
 function spawnDust(x,y){
